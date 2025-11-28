@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商用英語 100 Day (含隨機測驗 & 真人發音)</title>
+    <style>
+        :root {
+            --primary: #0f766e;
+            --secondary: #115e59;
+            --bg: #f0fdfa;
+            --card-bg: #ffffff;
+            --text: #1f2937;
+            --line-green: #06c755;
+            --play-color: #2563eb;
+            --quiz-color: #f59e0b; /* 測驗專用橘色 */
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            padding-bottom: 80px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+        }
+
+        h1 { color: var(--secondary); font-size: 1.8rem; margin: 0; }
+        .subtitle { color: #666; font-size: 0.9rem; margin-top: 5px; }
+
+        /* 控制面板 */
+        .controls {
+            position: sticky;
+            top: 0;
+            z-index: 90;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(5px);
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .day-selector { display: flex; align-items: center; gap: 10px; }
+        select { padding: 8px; font-size: 1rem; border-radius: 6px; border: 1px solid #ccc; }
+
+        button {
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9rem;
+        }
+
+        .btn-nav { background-color: var(--primary); color: white; }
+        .btn-nav:hover { background-color: var(--secondary); }
+        .btn-line { background-color: var(--line-green); color: white; }
+        .btn-line:hover { opacity: 0.9; }
+        
+        /* 測驗按鈕樣式 */
+        .btn-quiz { background-color: var(--quiz-color); color: white; }
+        .btn-quiz:hover { background-color: #d97706; }
+
+        /* 單字卡片 */
+        .word-list { display: grid; gap: 15px; }
+        .word-card {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            display: grid;
+            grid-template-columns: 2fr 1.5fr 1.5fr 1.5fr;
+            align-items: center;
+            gap: 10px;
+            border-left: 5px solid var(--primary);
+        }
+
+        .word-main { font-size: 1.2rem; font-weight: bold; color: var(--secondary); display: flex; align-items: center; gap: 8px; flex-wrap: wrap;}
+        .ipa { font-size: 0.85rem; color: #777; font-family: monospace; margin-top: 2px; }
+        .zh-text { font-weight: bold; color: #333; font-size: 1rem; }
+        
+        .sub-lang { font-size: 0.95rem; color: #444; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+        .lang-tag { font-size: 0.7rem; padding: 2px 4px; border-radius: 4px; background: #eee; color: #666; }
+
+        .audio-btn {
+            background: #e0f2fe; color: var(--play-color); border-radius: 50%; width: 28px; height: 28px;
+            padding: 0; display: inline-flex; justify-content: center; align-items: center; font-size: 1rem;
+            cursor: pointer; border: 1px solid #bae6fd; transition: all 0.2s;
+        }
+        .audio-btn:hover { background: var(--play-color); color: white; transform: scale(1.1); }
+        .playing { animation: pulse 1s infinite; background: var(--line-green); color: white; border-color: var(--line-green); }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(6, 199, 85, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(6, 199, 85, 0); } 100% { box-shadow: 0 0 0 0 rgba(6, 199, 85, 0); } }
+
+        /* ==================== 測驗模態框 (Modal) 樣式 ==================== */
+        .modal-overlay {
+            display: none; /* 預設隱藏 */
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); z-index: 1000;
+            justify-content: center; align-items: center;
+        }
+        .modal-content {
+            background: white; width: 90%; max-width: 500px;
+            padding: 30px; border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            text-align: center; position: relative;
+        }
+        .quiz-question { font-size: 1.8rem; font-weight: bold; color: var(--primary); margin-bottom: 20px; }
+        .quiz-options { display: grid; gap: 10px; }
+        .quiz-option-btn {
+            background: #f3f4f6; border: 2px solid #e5e7eb; padding: 15px;
+            font-size: 1.1rem; border-radius: 8px; cursor: pointer; transition: 0.2s;
+            color: #333; font-weight: bold;
+        }
+        .quiz-option-btn:hover { background: #e5e7eb; }
+        
+        .correct-answer { background-color: #dcfce7 !important; border-color: #22c55e !important; color: #15803d !important; }
+        .wrong-answer { background-color: #fee2e2 !important; border-color: #ef4444 !important; color: #b91c1c !important; }
+
+        .quiz-score { font-size: 1.2rem; margin-bottom: 10px; color: #666; }
+        .btn-close {
+            position: absolute; top: 15px; right: 15px;
+            background: none; border: none; font-size: 1.5rem; color: #999; cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .word-card { grid-template-columns: 1fr; gap: 8px; padding: 15px; }
+            .controls { flex-direction: column; align-items: stretch; }
+            .day-selector { justify-content: space-between; }
+        }
+
+        .toast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 8px; padding: 12px; position: fixed; z-index: 200; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 14px; }
+        .toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>💼 商用英語 100 Day</h1>
+    <div class="subtitle">點擊 🔊 發音 | 點擊 ⚔️ 測驗</div>
+</header>
+
+<div class="controls">
+    <div class="day-selector">
+        <label for="daySelect">天數：</label>
+        <select id="daySelect" onchange="jumpToDay()"></select>
+    </div>
+    
+    <button class="btn-quiz" onclick="startQuiz()">
+        ⚔️ 隨機測驗
+    </button>
+
+    <div style="display: flex; gap: 10px; justify-content: center;">
+        <button class="btn-nav" onclick="changeDay(-1)">◀ 上一天</button>
+        <button class="btn-nav" onclick="changeDay(1)">下一天 ▶</button>
+    </div>
+    <button class="btn-line" onclick="copyForLine()">
+        📋 複製到 LINE
+    </button>
+</div>
+
+<div id="word-container" class="word-list"></div>
+<div id="toast" class="toast">✅ 已複製！請貼上 LINE 群組</div>
+
+<!-- 測驗模態框 -->
+<div id="quizModal" class="modal-overlay">
+    <div class="modal-content">
+        <button class="btn-close" onclick="closeQuiz()">×</button>
+        <h2 id="quizTitle" style="color:var(--quiz-color); margin-top:0;">Daily Quiz</h2>
+        <div id="quizContent">
+            <div class="quiz-score" id="quizProgress">Question 1/10</div>
+            <div class="quiz-question" id="quizQuestion">Word</div>
+            <div class="quiz-options" id="quizOptions">
+                <!-- 選項按鈕由 JS 產生 -->
+            </div>
+        </div>
+        <div id="quizResult" style="display:none;">
+            <h2 style="font-size:3rem; margin:10px 0;">🎉</h2>
+            <h3>測驗結束！</h3>
+            <p style="font-size:1.5rem; font-weight:bold; color:var(--primary);">得分：<span id="finalScore">0</span> / 100</p>
+            <button class="btn-quiz" onclick="startQuiz()" style="width:100%; justify-content:center; margin-top:20px;">再測一次 ↻</button>
+            <button class="btn-nav" onclick="closeQuiz()" style="width:100%; justify-content:center; margin-top:10px; background:#999;">關閉</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ==========================================
+    // 資料庫 (Day 1 - Day 14)
+    // ==========================================
+    const vocabDatabase = [
+        // Day 1
+        [
+            { en: "Agenda", ipa: "/əˈdʒɛndə/", zh: "議程", ja: "アジェンダ (Ajenda)", ko: "안건 (An-geon)" },
+            { en: "Budget", ipa: "/ˈbʌdʒɪt/", zh: "預算", ja: "予算 (Yosan)", ko: "예산 (Ye-san)" },
+            { en: "Collaborate", ipa: "/kəˈlæbəˌreɪt/", zh: "合作", ja: "協力する (Kyōryoku)", ko: "협력하다" },
+            { en: "Deadline", ipa: "/ˈdɛdˌlaɪn/", zh: "截止期限", ja: "締め切り (Shimekiri)", ko: "마감일" },
+            { en: "Estimate", ipa: "/ˈɛstəmət/", zh: "估價單", ja: "見積もり (Mitsumori)", ko: "견적" },
+            { en: "Feedback", ipa: "/ˈfidˌbæk/", zh: "回饋", ja: "フィードバック", ko: "피드백" },
+            { en: "Guarantee", ipa: "/ˌɡærənˈti/", zh: "保證", ja: "保証 (Hoshō)", ko: "보증" },
+            { en: "Invoice", ipa: "/ˈɪnvɔɪs/", zh: "發票/請款", ja: "請求書 (Seikyūsho)", ko: "송장" },
+            { en: "Negotiation", ipa: "/nɪˌɡoʊʃiˈeɪʃən/", zh: "談判", ja: "交渉 (Kōshō)", ko: "협상" },
+            { en: "Strategy", ipa: "/ˈstrætədʒi/", zh: "策略", ja: "戦略 (Senryaku)", ko: "전략" }
+        ],
+        // Day 2
+        [
+            { en: "Asset", ipa: "/ˈæsɛt/", zh: "資產", ja: "資産 (Shisan)", ko: "자산" },
+            { en: "Benchmark", ipa: "/ˈbɛntʃˌmɑrk/", zh: "基準/標竿", ja: "ベンチマーク", ko: "벤치마킹" },
+            { en: "Compensate", ipa: "/ˈkɑmpənˌseɪt/", zh: "補償/賠償", ja: "補償する (Hoshō)", ko: "보상하다" },
+            { en: "Deficit", ipa: "/ˈdɛfəsɪt/", zh: "赤字", ja: "赤字 (Akaji)", ko: "적자" },
+            { en: "Executive", ipa: "/ɪɡˈzɛkjətɪv/", zh: "高階主管", ja: "幹部 (Kanbu)", ko: "임원" },
+            { en: "Fluctuate", ipa: "/ˈflʌktʃuˌeɪt/", zh: "波動", ja: "変動する (Hendō)", ko: "변동하다" },
+            { en: "Gross", ipa: "/ɡroʊs/", zh: "總共的/毛利", ja: "総計 (Sōkei)", ko: "총" },
+            { en: "Incentive", ipa: "/ɪnˈsɛntɪv/", zh: "獎勵/誘因", ja: "インセンティブ", ko: "인센티브" },
+            { en: "Merger", ipa: "/ˈmɜrdʒər/", zh: "合併", ja: "合併 (Gappei)", ko: "합병" },
+            { en: "Quarter", ipa: "/ˈkwɔrtər/", zh: "季度", ja: "四半期 (Shihanki)", ko: "분기" }
+        ],
+        // Day 3
+        [
+            { en: "Recruit", ipa: "/rɪˈkrut/", zh: "招募", ja: "採用する", ko: "채용하다" },
+            { en: "Resign", ipa: "/rɪˈzaɪn/", zh: "辭職", ja: "辞職する", ko: "사직하다" },
+            { en: "Salary", ipa: "/ˈsæləri/", zh: "薪水", ja: "給料", ko: "월급" },
+            { en: "Training", ipa: "/ˈtreɪnɪŋ/", zh: "教育訓練", ja: "研修", ko: "연수" },
+            { en: "Vacancy", ipa: "/ˈveɪkənsi/", zh: "職缺", ja: "空席", ko: "공석" },
+            { en: "Promotion", ipa: "/prəˈmoʊʃən/", zh: "升遷", ja: "昇進", ko: "승진" },
+            { en: "Retirement", ipa: "/rɪˈtaɪərmənt/", zh: "退休", ja: "退職", ko: "퇴직" },
+            { en: "Overtime", ipa: "/ˈoʊvərˌtaɪm/", zh: "加班", ja: "残業", ko: "야근" },
+            { en: "Evaluation", ipa: "/ɪˌvæljuˈeɪʃən/", zh: "考核", ja: "評価", ko: "평가" },
+            { en: "Candidate", ipa: "/ˈkændɪˌdeɪt/", zh: "候選人", ja: "候補者", ko: "후보자" }
+        ],
+        // Day 4
+        [
+            { en: "Campaign", ipa: "/kæmˈpeɪn/", zh: "活動", ja: "キャンペーン", ko: "캠페인" },
+            { en: "Brand", ipa: "/brænd/", zh: "品牌", ja: "ブランド", ko: "브랜드" },
+            { en: "Consumer", ipa: "/kənˈsumər/", zh: "消費者", ja: "消費者", ko: "소비자" },
+            { en: "Competitor", ipa: "/kəmˈpɛtətər/", zh: "競爭對手", ja: "競合", ko: "경쟁자" },
+            { en: "Distribution", ipa: "/ˌdɪstrəˈbjuʃən/", zh: "通路/分銷", ja: "流通", ko: "유통" },
+            { en: "Launch", ipa: "/lɔntʃ/", zh: "上市/發表", ja: "立ち上げ", ko: "출시" },
+            { en: "Market Share", ipa: "/ˈmɑrkət ʃɛr/", zh: "市佔率", ja: "市場シェア", ko: "시장 점유율" },
+            { en: "Potential", ipa: "/pəˈtɛnʃəl/", zh: "潛在的", ja: "潜在的な", ko: "잠재적인" },
+            { en: "Target", ipa: "/ˈtɑrɡɪt/", zh: "目標", ja: "ターゲット", ko: "목표" },
+            { en: "Trend", ipa: "/trɛnd/", zh: "趨勢", ja: "傾向", ko: "경향" }
+        ],
+        // Day 5
+        [
+            { en: "Inventory", ipa: "/ˌɪnvənˈtɔri/", zh: "庫存", ja: "在庫", ko: "재고" },
+            { en: "Logistics", ipa: "/ləˈdʒɪstɪks/", zh: "物流", ja: "物流", ko: "물류" },
+            { en: "Shipment", ipa: "/ˈʃɪpmənt/", zh: "出貨/貨物", ja: "出荷", ko: "선적" },
+            { en: "Warehouse", ipa: "/ˈwɛrˌhaʊs/", zh: "倉庫", ja: "倉庫", ko: "창고" },
+            { en: "Supplier", ipa: "/səˈplaɪər/", zh: "供應商", ja: "供給者", ko: "공급업체" },
+            { en: "Export", ipa: "/ˈɛkspɔrt/", zh: "出口", ja: "輸出", ko: "수출" },
+            { en: "Import", ipa: "/ˈɪmpɔrt/", zh: "進口", ja: "輸入", ko: "수입" },
+            { en: "Tariff", ipa: "/ˈtærɪf/", zh: "關稅", ja: "関税", ko: "관세" },
+            { en: "Capacity", ipa: "/kəˈpæsəti/", zh: "產能/容量", ja: "容量", ko: "용량" },
+            { en: "Delay", ipa: "/dɪˈleɪ/", zh: "延遲", ja: "遅延", ko: "지연" }
+        ],
+        // Day 6
+        [
+            { en: "Minutes", ipa: "/ˈmɪnɪts/", zh: "會議記錄", ja: "議事録", ko: "의사록" },
+            { en: "Proposal", ipa: "/prəˈpoʊzəl/", zh: "提案", ja: "提案", ko: "제안" },
+            { en: "Presentation", ipa: "/ˌprɛzənˈteɪʃən/", zh: "簡報", ja: "プレゼン", ko: "발표" },
+            { en: "Brainstorm", ipa: "/ˈbreɪnˌstɔrm/", zh: "腦力激盪", ja: "ブレインストーミング", ko: "브레인스토밍" },
+            { en: "Consensus", ipa: "/kənˈsɛnsəs/", zh: "共識", ja: "合意", ko: "합의" },
+            { en: "Priority", ipa: "/praɪˈɔrəti/", zh: "優先事項", ja: "優先順位", ko: "우선순위" },
+            { en: "Postpone", ipa: "/poʊstˈpoʊn/", zh: "延期", ja: "延期する", ko: "연기하다" },
+            { en: "Venue", ipa: "/ˈvɛnju/", zh: "會場/地點", ja: "会場", ko: "장소" },
+            { en: "Attend", ipa: "/əˈtɛnd/", zh: "參加/出席", ja: "出席する", ko: "참석하다" },
+            { en: "Schedule", ipa: "/ˈskɛdʒʊl/", zh: "行程表", ja: "スケジュール", ko: "일정" }
+        ],
+        // Day 7
+        [
+            { en: "Contract", ipa: "/ˈkɑntrækt/", zh: "合約", ja: "契約", ko: "계약" },
+            { en: "Clause", ipa: "/klɔz/", zh: "條款", ja: "条項", ko: "조항" },
+            { en: "Compliance", ipa: "/kəmˈplaɪəns/", zh: "合規/遵守", ja: "コンプライアンス", ko: "준수" },
+            { en: "Signature", ipa: "/ˈsɪɡnətʃər/", zh: "簽名", ja: "署名", ko: "서명" },
+            { en: "Term", ipa: "/tɜrm/", zh: "期限/術語", ja: "期間/用語", ko: "기간/용어" },
+            { en: "Validity", ipa: "/væˈlɪdəti/", zh: "有效性", ja: "有効性", ko: "유효성" },
+            { en: "Breach", ipa: "/britʃ/", zh: "違約/違反", ja: "違反", ko: "위반" },
+            { en: "Liable", ipa: "/ˈlaɪəbəl/", zh: "有責任的", ja: "法的責任がある", ko: "책임이 있는" },
+            { en: "Dispute", ipa: "/dɪˈspjut/", zh: "爭議", ja: "紛争", ko: "분쟁" },
+            { en: "Settlement", ipa: "/ˈsɛtəlmənt/", zh: "和解/結算", ja: "和解", ko: "합의/정산" }
+        ],
+        // Day 8
+        [
+            { en: "Database", ipa: "/ˈdeɪtəˌbeɪs/", zh: "資料庫", ja: "データベース", ko: "데이터베이스" },
+            { en: "Software", ipa: "/ˈsɔftˌwɛr/", zh: "軟體", ja: "ソフトウェア", ko: "소프트웨어" },
+            { en: "Hardware", ipa: "/ˈhɑrdˌwɛr/", zh: "硬體", ja: "ハードウェア", ko: "하드웨어" },
+            { en: "Network", ipa: "/ˈnɛtˌwɜrk/", zh: "網路", ja: "ネットワーク", ko: "네트워크" },
+            { en: "Server", ipa: "/ˈsɜrvər/", zh: "伺服器", ja: "サーバー", ko: "서버" },
+            { en: "Upgrade", ipa: "/ˈʌpˌɡreɪd/", zh: "升級", ja: "アップグレード", ko: "업그레이드" },
+            { en: "Maintenance", ipa: "/ˈmeɪntənəns/", zh: "維護", ja: "メンテナンス", ko: "유지 보수" },
+            { en: "Security", ipa: "/sɪˈkjʊrəti/", zh: "安全性", ja: "セキュリティ", ko: "보안" },
+            { en: "Integration", ipa: "/ˌɪntəˈɡreɪʃən/", zh: "整合", ja: "統合", ko: "통합" },
+            { en: "Access", ipa: "/ˈækˌsɛs/", zh: "存取/權限", ja: "アクセス", ko: "접속" }
+        ],
+        // Day 9
+        [
+            { en: "Assembly", ipa: "/əˈsɛmbli/", zh: "組裝", ja: "組み立て", ko: "조립" },
+            { en: "Component", ipa: "/kəmˈpoʊnənt/", zh: "零件/元件", ja: "部品", ko: "부품" },
+            { en: "Defect", ipa: "/ˈdifɛkt/", zh: "瑕疵", ja: "欠陥", ko: "결함" },
+            { en: "Equipment", ipa: "/ɪˈkwɪpmənt/", zh: "設備", ja: "設備", ko: "장비" },
+            { en: "Facility", ipa: "/fəˈsɪləti/", zh: "設施/工廠", ja: "施設", ko: "시설" },
+            { en: "Material", ipa: "/məˈtɪriəl/", zh: "材料", ja: "材料", ko: "재료" },
+            { en: "Output", ipa: "/ˈaʊtˌpʊt/", zh: "產量", ja: "生産高", ko: "생산량" },
+            { en: "Process", ipa: "/ˈprɑsɛs/", zh: "製程", ja: "工程", ko: "공정" },
+            { en: "Quality", ipa: "/ˈkwɑləti/", zh: "品質", ja: "品質", ko: "품질" },
+            { en: "Standard", ipa: "/ˈstændərd/", zh: "標準", ja: "標準", ko: "표준" }
+        ],
+        // Day 10
+        [
+            { en: "Administer", ipa: "/ədˈmɪnɪstər/", zh: "管理/執行", ja: "管理する", ko: "관리하다" },
+            { en: "Allocate", ipa: "/ˈæləˌkeɪt/", zh: "分配(資源)", ja: "割り当てる", ko: "할당하다" },
+            { en: "Coordinate", ipa: "/koʊˈɔrdəˌneɪt/", zh: "協調", ja: "調整する", ko: "조정하다" },
+            { en: "Delegate", ipa: "/ˈdɛləˌɡeɪt/", zh: "委派/授權", ja: "委任する", ko: "위임하다" },
+            { en: "Implement", ipa: "/ˈɪmpləmənt/", zh: "實施/執行", ja: "実行する", ko: "시행하다" },
+            { en: "Monitor", ipa: "/ˈmɑnətər/", zh: "監控", ja: "監視する", ko: "모니터링하다" },
+            { en: "Organize", ipa: "/ˈɔrɡəˌnaɪz/", zh: "組織/安排", ja: "組織する", ko: "조직하다" },
+            { en: "Review", ipa: "/rɪˈvju/", zh: "審查/複習", ja: "見直す", ko: "검토하다" },
+            { en: "Supervise", ipa: "/ˈsupərˌvaɪz/", zh: "監督", ja: "監督する", ko: "감독하다" },
+            { en: "Vision", ipa: "/ˈvɪʒən/", zh: "願景", ja: "ビジョン", ko: "비전" }
+        ],
+        // Day 11
+        [
+            { en: "Cart", ipa: "/kɑrt/", zh: "購物車", ja: "カート", ko: "장바구니" },
+            { en: "Checkout", ipa: "/ˈtʃɛkˌaʊt/", zh: "結帳", ja: "支払い", ko: "결제" },
+            { en: "Traffic", ipa: "/ˈtræfɪk/", zh: "流量", ja: "トラフィック", ko: "트래픽" },
+            { en: "Conversion", ipa: "/kənˈvɜrʒən/", zh: "轉換率", ja: "コンバージョン", ko: "전환" },
+            { en: "Platform", ipa: "/ˈplætfɔrm/", zh: "平台", ja: "プラットフォーム", ko: "플랫폼" },
+            { en: "Review", ipa: "/rɪˈvju/", zh: "評論", ja: "レビュー", ko: "리뷰" },
+            { en: "Subscription", ipa: "/səbˈskrɪpʃən/", zh: "訂閱", ja: "サブスクリプション", ko: "구독" },
+            { en: "Digital", ipa: "/ˈdɪdʒətəl/", zh: "數位的", ja: "デジタル", ko: "디지털" },
+            { en: "Viral", ipa: "/ˈvaɪrəl/", zh: "病毒式傳播", ja: "バイラル", ko: "바이럴" },
+            { en: "User", ipa: "/ˈjuzər/", zh: "使用者", ja: "ユーザー", ko: "사용자" }
+        ],
+        // Day 12
+        [
+            { en: "Complaint", ipa: "/kəmˈpleɪnt/", zh: "客訴/抱怨", ja: "クレーム", ko: "불만" },
+            { en: "Inquiry", ipa: "/ɪnˈkwaɪri/", zh: "詢問", ja: "問い合わせ", ko: "문의" },
+            { en: "Support", ipa: "/səˈpɔrt/", zh: "支援", ja: "サポート", ko: "지원" },
+            { en: "Satisfaction", ipa: "/ˌsætɪsˈfækʃən/", zh: "滿意度", ja: "満足度", ko: "만족도" },
+            { en: "Refund", ipa: "/ˈriˌfʌnd/", zh: "退款", ja: "返金", ko: "환불" },
+            { en: "Replacement", ipa: "/rɪˈpleɪsmənt/", zh: "換貨", ja: "交換", ko: "교환" },
+            { en: "Warranty", ipa: "/ˈwɔrənti/", zh: "保固", ja: "保証", ko: "보증" },
+            { en: "Assist", ipa: "/əˈsɪst/", zh: "協助", ja: "支援する", ko: "돕다" },
+            { en: "Issue", ipa: "/ˈɪʃu/", zh: "問題/議題", ja: "問題", ko: "문제" },
+            { en: "Resolve", ipa: "/rɪˈzɑlv/", zh: "解決", ja: "解決する", ko: "해결하다" }
+        ],
+        // Day 13
+        [
+            { en: "Account", ipa: "/əˈkaʊnt/", zh: "帳戶", ja: "口座", ko: "계좌" },
+            { en: "Balance", ipa: "/ˈbæləns/", zh: "餘額", ja: "残高", ko: "잔액" },
+            { en: "Currency", ipa: "/ˈkɜrənsi/", zh: "貨幣", ja: "通貨", ko: "통화" },
+            { en: "Deposit", ipa: "/dɪˈpɑzɪt/", zh: "存款/押金", ja: "預金", ko: "예금" },
+            { en: "Interest", ipa: "/ˈɪntrəst/", zh: "利息/興趣", ja: "利子", ko: "이자" },
+            { en: "Loan", ipa: "/loʊn/", zh: "貸款", ja: "ローン", ko: "대출" },
+            { en: "Transaction", ipa: "/trænˈzækʃən/", zh: "交易", ja: "取引", ko: "거래" },
+            { en: "Transfer", ipa: "/trænsˈfɜr/", zh: "轉帳", ja: "振込", ko: "이체" },
+            { en: "Withdraw", ipa: "/wɪðˈdrɔ/", zh: "提款", ja: "引き出す", ko: "인출하다" },
+            { en: "Rate", ipa: "/reɪt/", zh: "匯率/比率", ja: "レート", ko: "환율" }
+        ],
+        // Day 14
+        [
+            { en: "Stock", ipa: "/stɑk/", zh: "股票", ja: "株式", ko: "주식" },
+            { en: "Bond", ipa: "/bɑnd/", zh: "債券", ja: "債券", ko: "채권" },
+            { en: "Dividend", ipa: "/ˈdɪvɪˌdɛnd/", zh: "股息", ja: "配当", ko: "배당금" },
+            { en: "Portfolio", ipa: "/pɔrtˈfoʊliˌoʊ/", zh: "投資組合", ja: "ポートフォリオ", ko: "포트폴리오" },
+            { en: "Risk", ipa: "/rɪsk/", zh: "風險", ja: "リスク", ko: "위험" },
+            { en: "Return", ipa: "/rɪˈtɜrn/", zh: "報酬/回報", ja: "リターン", ko: "수익" },
+            { en: "Shareholder", ipa: "/ˈʃɛrˌhoʊldər/", zh: "股東", ja: "株主", ko: "주주" },
+            { en: "Bull", ipa: "/bʊl/", zh: "多頭(牛市)", ja: "強気", ko: "강세" },
+            { en: "Bear", ipa: "/bɛr/", zh: "空頭(熊市)", ja: "弱気", ko: "약세" },
+            { en: "Index", ipa: "/ˈɪndɛks/", zh: "指數", ja: "指数", ko: "지수" }
+        ]
+    ];
+
+    let currentDayIndex = 0;
+    let currentAudio = null;
+
+    // --- 測驗相關變數 ---
+    let quizData = [];
+    let quizCurrentIndex = 0;
+    let quizScore = 0;
+
+    function initSelect() {
+        const select = document.getElementById('daySelect');
+        select.innerHTML = '';
+        for (let i = 0; i < 100; i++) {
+            const option = document.createElement('option');
+            option.value = i;
+            if (i < vocabDatabase.length) {
+                option.text = `Day ${i + 1}`;
+            } else {
+                option.text = `Day ${i + 1} (待新增)`;
+                option.disabled = true;
+            }
+            select.appendChild(option);
+        }
+    }
+
+    function renderWords(dayIndex) {
+        const list = document.getElementById('word-container');
+        const select = document.getElementById('daySelect');
+        
+        if (dayIndex >= vocabDatabase.length) dayIndex = 0;
+        if (dayIndex < 0) dayIndex = vocabDatabase.length - 1;
+
+        currentDayIndex = dayIndex;
+        select.value = currentDayIndex;
+
+        list.innerHTML = '';
+        const words = vocabDatabase[dayIndex];
+
+        words.forEach((word, index) => {
+            const div = document.createElement('div');
+            div.className = 'word-card';
+            div.innerHTML = `
+                <div class="lang-section">
+                    <div class="word-main">
+                        ${index + 1}. ${word.en}
+                        <button class="audio-btn" id="btn-en-${index}" onclick="playGoogleTTS('btn-en-${index}', '${word.en}', 'en')">🔊</button>
+                    </div>
+                    <div class="ipa">${word.ipa}</div>
+                </div>
+                
+                <div class="lang-section zh-text">
+                    ${word.zh}
+                </div>
+
+                <div class="lang-section">
+                    <div class="sub-lang">
+                        <span class="lang-tag">JP</span> ${word.ja}
+                        <button class="audio-btn" id="btn-jp-${index}" onclick="playGoogleTTS('btn-jp-${index}', '${word.ja}', 'ja')" style="width:24px; height:24px; font-size:0.8rem; margin-left:5px;">🔊</button>
+                    </div>
+                </div>
+
+                <div class="lang-section">
+                    <div class="sub-lang">
+                        <span class="lang-tag">KR</span> ${word.ko}
+                        <button class="audio-btn" id="btn-kr-${index}" onclick="playGoogleTTS('btn-kr-${index}', '${word.ko}', 'ko')" style="width:24px; height:24px; font-size:0.8rem; margin-left:5px;">🔊</button>
+                    </div>
+                </div>
+            `;
+            list.appendChild(div);
+        });
+    }
+
+    function changeDay(offset) {
+        let newIndex = currentDayIndex + offset;
+        if (newIndex >= vocabDatabase.length) newIndex = 0;
+        if (newIndex < 0) newIndex = vocabDatabase.length - 1;
+        renderWords(newIndex);
+        window.scrollTo(0, 0);
+    }
+
+    function jumpToDay() {
+        const select = document.getElementById('daySelect');
+        const val = parseInt(select.value);
+        renderWords(val);
+    }
+
+    // 發音功能
+    function cleanText(text) { return text.split('(')[0].split('（')[0].trim(); }
+
+    function playGoogleTTS(btnId, text, lang) {
+        if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+        document.querySelectorAll('.audio-btn').forEach(btn => btn.classList.remove('playing'));
+        const textToSpeak = cleanText(text);
+        const btn = document.getElementById(btnId);
+        const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(textToSpeak)}&tl=${lang}&client=tw-ob`;
+        const audio = new Audio(url);
+        btn.classList.add('playing');
+        audio.play().then(() => { currentAudio = audio; })
+             .catch(err => { console.error(err); alert("播放失敗，請稍後再試。"); btn.classList.remove('playing'); });
+        audio.onended = function() { btn.classList.remove('playing'); };
+        audio.onerror = function() { btn.classList.remove('playing'); };
+    }
+
+    function copyForLine() {
+        const words = vocabDatabase[currentDayIndex];
+        let text = `📅 Day ${currentDayIndex + 1} 單字表\n------------------\n`;
+        words.forEach((w, i) => { text += `🔹 ${w.en} ${w.ipa}\n   中: ${w.zh}\n   日: ${w.ja}\n   韓: ${w.ko}\n\n`; });
+        text += `💪 加油！`;
+        navigator.clipboard.writeText(text).then(() => {
+            const toast = document.getElementById("toast"); toast.className = "toast show";
+            setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 3000);
+        });
+    }
+
+    // ==========================================
+    // ⚔️ 測驗邏輯 (New Feature)
+    // ==========================================
+    
+    // 洗牌演算法 (Fisher-Yates Shuffle)
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function startQuiz() {
+        // 1. 取得當天單字並複製一份來洗牌
+        const todayWords = [...vocabDatabase[currentDayIndex]];
+        quizData = shuffleArray(todayWords);
+        
+        // 2. 初始化變數
+        quizCurrentIndex = 0;
+        quizScore = 0;
+        
+        // 3. UI 初始化
+        document.getElementById('quizTitle').innerText = `Day ${currentDayIndex + 1} 隨機測驗`;
+        document.getElementById('quizContent').style.display = 'block';
+        document.getElementById('quizResult').style.display = 'none';
+        document.getElementById('quizModal').style.display = 'flex'; // 顯示模態框
+        
+        // 4. 顯示第一題
+        showQuestion();
+    }
+
+    function closeQuiz() {
+        document.getElementById('quizModal').style.display = 'none';
+    }
+
+    function showQuestion() {
+        if (quizCurrentIndex >= quizData.length) {
+            showResult();
+            return;
+        }
+
+        const currentWord = quizData[quizCurrentIndex];
+        const todayWords = vocabDatabase[currentDayIndex];
+
+        // 更新進度
+        document.getElementById('quizProgress').innerText = `Question ${quizCurrentIndex + 1} / ${quizData.length}`;
+        // 顯示英文題目
+        document.getElementById('quizQuestion').innerText = currentWord.en;
+
+        // 產生選項 (1個正確 + 3個錯誤)
+        let options = [currentWord];
+        
+        // 挑選錯誤選項 (從當天其他單字選)
+        const wrongCandidates = todayWords.filter(w => w.en !== currentWord.en);
+        const shuffledWrong = shuffleArray([...wrongCandidates]);
+        options.push(...shuffledWrong.slice(0, 3)); // 取前三個
+        
+        // 打亂選項順序
+        options = shuffleArray(options);
+
+        // 渲染按鈕
+        const optionsContainer = document.getElementById('quizOptions');
+        optionsContainer.innerHTML = ''; // 清空
+
+        options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'quiz-option-btn';
+            btn.innerText = opt.zh; // 顯示中文意思
+            btn.onclick = () => checkAnswer(btn, opt.en === currentWord.en);
+            optionsContainer.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(btn, isCorrect) {
+        // 鎖定所有按鈕防止重複點擊
+        const allBtns = document.querySelectorAll('.quiz-option-btn');
+        allBtns.forEach(b => b.disabled = true);
+
+        if (isCorrect) {
+            btn.classList.add('correct-answer');
+            quizScore += 10;
+        } else {
+            btn.classList.add('wrong-answer');
+            // 找出正確答案並標示
+            allBtns.forEach(b => {
+                if (b.innerText === quizData[quizCurrentIndex].zh) {
+                    b.classList.add('correct-answer');
+                }
+            });
+        }
+
+        // 延遲 1 秒後進入下一題
+        setTimeout(() => {
+            quizCurrentIndex++;
+            showQuestion();
+        }, 1000);
+    }
+
+    function showResult() {
+        document.getElementById('quizContent').style.display = 'none';
+        document.getElementById('quizResult').style.display = 'block';
+        document.getElementById('finalScore').innerText = quizScore;
+    }
+
+    // 初始化
+    initSelect();
+    renderWords(0);
+
+</script>
+
+</body>
+</html>
