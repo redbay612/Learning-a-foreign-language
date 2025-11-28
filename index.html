@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>商用英語 100 Day (含隨機測驗 & 真人發音)</title>
+    <title>商用英語 100 Day Challenge (完整旗艦版)</title>
     <style>
         :root {
-            --primary: #0f766e;
+            --primary: #0f766e;      /* 主色調：深藍綠 */
             --secondary: #115e59;
-            --bg: #f0fdfa;
-            --card-bg: #ffffff;
+            --bg: #f0fdfa;           /* 背景色 */
+            --card-bg: #ffffff;      /* 卡片背景 */
             --text: #1f2937;
-            --line-green: #06c755;
-            --play-color: #2563eb;
-            --quiz-color: #f59e0b; /* 測驗專用橘色 */
+            --line-green: #06c755;   /* LINE 綠色 */
+            --play-color: #2563eb;   /* 播放按鈕藍色 */
+            --quiz-color: #f59e0b;   /* 測驗按鈕橘色 */
         }
 
         body {
@@ -23,26 +23,26 @@
             max-width: 900px;
             margin: 0 auto;
             padding: 20px;
-            padding-bottom: 80px;
+            padding-bottom: 100px; /* 預留底部空間給 Toast */
         }
 
         header {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             padding-bottom: 20px;
-            border-bottom: 2px solid #ddd;
+            border-bottom: 2px solid #e2e8f0;
         }
 
         h1 { color: var(--secondary); font-size: 1.8rem; margin: 0; }
-        .subtitle { color: #666; font-size: 0.9rem; margin-top: 5px; }
+        .subtitle { color: #666; font-size: 0.9rem; margin-top: 8px; font-weight: 500; }
 
-        /* 控制面板 */
+        /* --- 控制面板區域 --- */
         .controls {
             position: sticky;
             top: 0;
             z-index: 90;
             background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(8px);
             padding: 15px;
             border-radius: 12px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -51,102 +51,108 @@
             align-items: center;
             margin-bottom: 20px;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 12px;
         }
 
-        .day-selector { display: flex; align-items: center; gap: 10px; }
-        select { padding: 8px; font-size: 1rem; border-radius: 6px; border: 1px solid #ccc; }
+        .day-selector { display: flex; align-items: center; gap: 8px; font-weight: bold; }
+        select { padding: 8px 12px; font-size: 1rem; border-radius: 6px; border: 1px solid #cbd5e1; outline: none; }
 
         button {
             border: none;
-            padding: 10px 15px;
+            padding: 10px 16px;
             border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
-            transition: 0.2s;
+            transition: all 0.2s ease;
             display: flex;
             align-items: center;
-            gap: 5px;
-            font-size: 0.9rem;
+            gap: 6px;
+            font-size: 0.95rem;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
+        button:active { transform: scale(0.96); }
 
         .btn-nav { background-color: var(--primary); color: white; }
         .btn-nav:hover { background-color: var(--secondary); }
-        .btn-line { background-color: var(--line-green); color: white; }
-        .btn-line:hover { opacity: 0.9; }
         
-        /* 測驗按鈕樣式 */
+        .btn-line { background-color: var(--line-green); color: white; }
+        .btn-line:hover { background-color: #05b14c; }
+        
         .btn-quiz { background-color: var(--quiz-color); color: white; }
         .btn-quiz:hover { background-color: #d97706; }
 
-        /* 單字卡片 */
-        .word-list { display: grid; gap: 15px; }
+        /* --- 單字卡片設計 --- */
+        .word-list { display: grid; gap: 16px; }
         .word-card {
             background: var(--card-bg);
-            padding: 15px 20px;
+            padding: 16px 24px;
             border-radius: 12px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02), 0 1px 2px rgba(0,0,0,0.04);
             display: grid;
-            grid-template-columns: 2fr 1.5fr 1.5fr 1.5fr;
+            grid-template-columns: 2fr 1.5fr 1.5fr 1.5fr; /* 英 中 日 韓 */
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             border-left: 5px solid var(--primary);
+            transition: transform 0.2s;
         }
+        .word-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
 
-        .word-main { font-size: 1.2rem; font-weight: bold; color: var(--secondary); display: flex; align-items: center; gap: 8px; flex-wrap: wrap;}
-        .ipa { font-size: 0.85rem; color: #777; font-family: monospace; margin-top: 2px; }
-        .zh-text { font-weight: bold; color: #333; font-size: 1rem; }
+        .word-main { font-size: 1.25rem; font-weight: 700; color: var(--secondary); display: flex; align-items: center; gap: 8px; flex-wrap: wrap;}
+        .ipa { font-size: 0.85rem; color: #64748b; font-family: 'Courier New', monospace; margin-top: 4px; }
+        .zh-text { font-weight: 600; color: #334155; font-size: 1.05rem; }
         
-        .sub-lang { font-size: 0.95rem; color: #444; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
-        .lang-tag { font-size: 0.7rem; padding: 2px 4px; border-radius: 4px; background: #eee; color: #666; }
+        .sub-lang { font-size: 0.95rem; color: #475569; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .lang-tag { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background: #e2e8f0; color: #64748b; font-weight: bold; }
 
+        /* 喇叭按鈕 */
         .audio-btn {
-            background: #e0f2fe; color: var(--play-color); border-radius: 50%; width: 28px; height: 28px;
+            background: #e0f2fe; color: var(--play-color); border-radius: 50%; width: 30px; height: 30px;
             padding: 0; display: inline-flex; justify-content: center; align-items: center; font-size: 1rem;
-            cursor: pointer; border: 1px solid #bae6fd; transition: all 0.2s;
+            cursor: pointer; border: 1px solid #bae6fd; transition: all 0.2s; box-shadow: none;
         }
-        .audio-btn:hover { background: var(--play-color); color: white; transform: scale(1.1); }
+        .audio-btn:hover { background: var(--play-color); color: white; border-color: var(--play-color); }
+        
+        /* 播放中的動畫 */
         .playing { animation: pulse 1s infinite; background: var(--line-green); color: white; border-color: var(--line-green); }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(6, 199, 85, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(6, 199, 85, 0); } 100% { box-shadow: 0 0 0 0 rgba(6, 199, 85, 0); } }
 
-        /* ==================== 測驗模態框 (Modal) 樣式 ==================== */
+        /* --- 測驗視窗 (Modal) --- */
         .modal-overlay {
-            display: none; /* 預設隱藏 */
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6); z-index: 1000;
-            justify-content: center; align-items: center;
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center;
+            backdrop-filter: blur(3px);
         }
         .modal-content {
-            background: white; width: 90%; max-width: 500px;
-            padding: 30px; border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            text-align: center; position: relative;
+            background: white; width: 90%; max-width: 500px; padding: 30px;
+            border-radius: 20px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            text-align: center; position: relative; animation: slideUp 0.3s ease-out;
         }
-        .quiz-question { font-size: 1.8rem; font-weight: bold; color: var(--primary); margin-bottom: 20px; }
-        .quiz-options { display: grid; gap: 10px; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .quiz-question { font-size: 2rem; font-weight: 800; color: var(--primary); margin: 20px 0; }
+        .quiz-options { display: grid; gap: 12px; }
         .quiz-option-btn {
-            background: #f3f4f6; border: 2px solid #e5e7eb; padding: 15px;
-            font-size: 1.1rem; border-radius: 8px; cursor: pointer; transition: 0.2s;
-            color: #333; font-weight: bold;
+            background: #f8fafc; border: 2px solid #e2e8f0; padding: 16px; width: 100%;
+            font-size: 1.1rem; border-radius: 10px; cursor: pointer; color: #334155; font-weight: 600;
+            justify-content: center;
         }
-        .quiz-option-btn:hover { background: #e5e7eb; }
+        .quiz-option-btn:hover { background: #e2e8f0; border-color: #cbd5e1; }
         
         .correct-answer { background-color: #dcfce7 !important; border-color: #22c55e !important; color: #15803d !important; }
         .wrong-answer { background-color: #fee2e2 !important; border-color: #ef4444 !important; color: #b91c1c !important; }
+        
+        .btn-close { position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 1.8rem; color: #94a3b8; cursor: pointer; box-shadow: none; padding: 0; }
+        .btn-close:hover { color: #475569; }
 
-        .quiz-score { font-size: 1.2rem; margin-bottom: 10px; color: #666; }
-        .btn-close {
-            position: absolute; top: 15px; right: 15px;
-            background: none; border: none; font-size: 1.5rem; color: #999; cursor: pointer;
-        }
-
+        /* --- RWD 手機版調整 --- */
         @media (max-width: 768px) {
-            .word-card { grid-template-columns: 1fr; gap: 8px; padding: 15px; }
+            .word-card { grid-template-columns: 1fr; gap: 10px; padding: 15px; }
             .controls { flex-direction: column; align-items: stretch; }
             .day-selector { justify-content: space-between; }
         }
 
-        .toast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 8px; padding: 12px; position: fixed; z-index: 200; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 14px; }
+        /* 複製提示框 */
+        .toast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 50px; padding: 12px 20px; position: fixed; z-index: 200; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 14px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
         @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
         @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
@@ -156,12 +162,12 @@
 
 <header>
     <h1>💼 商用英語 100 Day</h1>
-    <div class="subtitle">點擊 🔊 發音 | 點擊 ⚔️ 測驗</div>
+    <div class="subtitle">Flagship Edition: 真人語音・隨機測驗・多語對照</div>
 </header>
 
 <div class="controls">
     <div class="day-selector">
-        <label for="daySelect">天數：</label>
+        <label for="daySelect">🗓️ 進度：</label>
         <select id="daySelect" onchange="jumpToDay()"></select>
     </div>
     
@@ -169,9 +175,9 @@
         ⚔️ 隨機測驗
     </button>
 
-    <div style="display: flex; gap: 10px; justify-content: center;">
-        <button class="btn-nav" onclick="changeDay(-1)">◀ 上一天</button>
-        <button class="btn-nav" onclick="changeDay(1)">下一天 ▶</button>
+    <div style="display: flex; gap: 8px; justify-content: center;">
+        <button class="btn-nav" onclick="changeDay(-1)">◀ Prev</button>
+        <button class="btn-nav" onclick="changeDay(1)">Next ▶</button>
     </div>
     <button class="btn-line" onclick="copyForLine()">
         📋 複製到 LINE
@@ -179,33 +185,37 @@
 </div>
 
 <div id="word-container" class="word-list"></div>
-<div id="toast" class="toast">✅ 已複製！請貼上 LINE 群組</div>
+<div id="toast" class="toast">✅ 已成功複製到剪貼簿！</div>
 
-<!-- 測驗模態框 -->
+<!-- 測驗模態框 (Quiz Modal) -->
 <div id="quizModal" class="modal-overlay">
     <div class="modal-content">
         <button class="btn-close" onclick="closeQuiz()">×</button>
-        <h2 id="quizTitle" style="color:var(--quiz-color); margin-top:0;">Daily Quiz</h2>
+        <h3 id="quizTitle" style="color:var(--quiz-color); margin-top:0;">Daily Quiz</h3>
+        
+        <!-- 測驗進行中 -->
         <div id="quizContent">
-            <div class="quiz-score" id="quizProgress">Question 1/10</div>
+            <div style="margin-bottom:10px; color:#64748b; font-size:0.9rem;" id="quizProgress">Question 1/10</div>
             <div class="quiz-question" id="quizQuestion">Word</div>
-            <div class="quiz-options" id="quizOptions">
-                <!-- 選項按鈕由 JS 產生 -->
-            </div>
+            <div class="quiz-options" id="quizOptions"></div>
         </div>
+        
+        <!-- 測驗結果 -->
         <div id="quizResult" style="display:none;">
-            <h2 style="font-size:3rem; margin:10px 0;">🎉</h2>
-            <h3>測驗結束！</h3>
-            <p style="font-size:1.5rem; font-weight:bold; color:var(--primary);">得分：<span id="finalScore">0</span> / 100</p>
-            <button class="btn-quiz" onclick="startQuiz()" style="width:100%; justify-content:center; margin-top:20px;">再測一次 ↻</button>
-            <button class="btn-nav" onclick="closeQuiz()" style="width:100%; justify-content:center; margin-top:10px; background:#999;">關閉</button>
+            <div style="font-size:4rem; margin:10px 0;">🏆</div>
+            <h3>測驗完成！</h3>
+            <p style="font-size:1.5rem; color:#334155;">你的得分：<span id="finalScore" style="color:var(--primary); font-weight:bold;">0</span> / 100</p>
+            <div style="margin-top:20px; display:grid; gap:10px;">
+                <button class="btn-quiz" onclick="startQuiz()" style="justify-content:center;">再測一次 ↻</button>
+                <button class="btn-nav" onclick="closeQuiz()" style="justify-content:center; background:#94a3b8;">關閉視窗</button>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
     // ==========================================
-    // 資料庫 (Day 1 - Day 14)
+    // 📚 資料庫 (目前內建 Day 1 - Day 14)
     // ==========================================
     const vocabDatabase = [
         // Day 1
@@ -390,19 +400,22 @@
             { en: "Bear", ipa: "/bɛr/", zh: "空頭(熊市)", ja: "弱気", ko: "약세" },
             { en: "Index", ipa: "/ˈɪndɛks/", zh: "指數", ja: "指数", ko: "지수" }
         ]
+        // 🚀 未來可繼續擴充至 Day 100
     ];
 
     let currentDayIndex = 0;
     let currentAudio = null;
 
-    // --- 測驗相關變數 ---
+    // --- 測驗用全域變數 ---
     let quizData = [];
     let quizCurrentIndex = 0;
     let quizScore = 0;
 
+    // 初始化下拉選單
     function initSelect() {
         const select = document.getElementById('daySelect');
         select.innerHTML = '';
+        // 預設建立 100 天的選項結構
         for (let i = 0; i < 100; i++) {
             const option = document.createElement('option');
             option.value = i;
@@ -416,17 +429,19 @@
         }
     }
 
+    // 渲染單字列表
     function renderWords(dayIndex) {
         const list = document.getElementById('word-container');
         const select = document.getElementById('daySelect');
         
+        // 邊界檢查
         if (dayIndex >= vocabDatabase.length) dayIndex = 0;
         if (dayIndex < 0) dayIndex = vocabDatabase.length - 1;
 
         currentDayIndex = dayIndex;
         select.value = currentDayIndex;
 
-        list.innerHTML = '';
+        list.innerHTML = ''; // 清空列表
         const words = vocabDatabase[dayIndex];
 
         words.forEach((word, index) => {
@@ -436,7 +451,7 @@
                 <div class="lang-section">
                     <div class="word-main">
                         ${index + 1}. ${word.en}
-                        <button class="audio-btn" id="btn-en-${index}" onclick="playGoogleTTS('btn-en-${index}', '${word.en}', 'en')">🔊</button>
+                        <button class="audio-btn" id="btn-en-${index}" title="播放英語" onclick="playAudio('btn-en-${index}', '${word.en}', 'en')">🔊</button>
                     </div>
                     <div class="ipa">${word.ipa}</div>
                 </div>
@@ -448,14 +463,14 @@
                 <div class="lang-section">
                     <div class="sub-lang">
                         <span class="lang-tag">JP</span> ${word.ja}
-                        <button class="audio-btn" id="btn-jp-${index}" onclick="playGoogleTTS('btn-jp-${index}', '${word.ja}', 'ja')" style="width:24px; height:24px; font-size:0.8rem; margin-left:5px;">🔊</button>
+                        <button class="audio-btn" id="btn-jp-${index}" title="播放日語" onclick="playAudio('btn-jp-${index}', '${word.ja}', 'ja')" style="width:24px; height:24px; font-size:0.8rem;">🔊</button>
                     </div>
                 </div>
 
                 <div class="lang-section">
                     <div class="sub-lang">
                         <span class="lang-tag">KR</span> ${word.ko}
-                        <button class="audio-btn" id="btn-kr-${index}" onclick="playGoogleTTS('btn-kr-${index}', '${word.ko}', 'ko')" style="width:24px; height:24px; font-size:0.8rem; margin-left:5px;">🔊</button>
+                        <button class="audio-btn" id="btn-kr-${index}" title="播放韓語" onclick="playAudio('btn-kr-${index}', '${word.ko}', 'ko')" style="width:24px; height:24px; font-size:0.8rem;">🔊</button>
                     </div>
                 </div>
             `;
@@ -477,39 +492,107 @@
         renderWords(val);
     }
 
-    // 發音功能
-    function cleanText(text) { return text.split('(')[0].split('（')[0].trim(); }
-
-    function playGoogleTTS(btnId, text, lang) {
-        if (currentAudio) { currentAudio.pause(); currentAudio = null; }
-        document.querySelectorAll('.audio-btn').forEach(btn => btn.classList.remove('playing'));
-        const textToSpeak = cleanText(text);
-        const btn = document.getElementById(btnId);
-        const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(textToSpeak)}&tl=${lang}&client=tw-ob`;
-        const audio = new Audio(url);
-        btn.classList.add('playing');
-        audio.play().then(() => { currentAudio = audio; })
-             .catch(err => { console.error(err); alert("播放失敗，請稍後再試。"); btn.classList.remove('playing'); });
-        audio.onended = function() { btn.classList.remove('playing'); };
-        audio.onerror = function() { btn.classList.remove('playing'); };
+    // ==========================================
+    // 🔊 雙重保險語音播放核心 (修復版)
+    // ==========================================
+    
+    // 清理文字：移除括號內的拼音，確保發音引擎只讀文字
+    function cleanText(text) {
+        return text.split('(')[0].split('（')[0].trim();
     }
 
+    function playAudio(btnId, text, lang) {
+        // 1. 停止目前所有播放中的聲音
+        if (currentAudio) {
+            currentAudio.pause();
+            currentAudio = null;
+        }
+        window.speechSynthesis.cancel();
+        
+        // 2. UI 狀態重置
+        document.querySelectorAll('.audio-btn').forEach(btn => btn.classList.remove('playing'));
+        const btn = document.getElementById(btnId);
+        btn.classList.add('playing');
+
+        const textToSpeak = cleanText(text);
+
+        // 3. 嘗試第一順位：Google TTS (使用 gtx 接口)
+        const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(textToSpeak)}&tl=${lang}&client=gtx`;
+        const audio = new Audio(url);
+
+        // 嘗試播放
+        const playPromise = audio.play();
+
+        if (playPromise !== undefined) {
+            playPromise.then(() => {
+                // ---> Google 成功播放
+                currentAudio = audio;
+                audio.onended = function() {
+                    btn.classList.remove('playing');
+                };
+            }).catch(error => {
+                // ---> Google 失敗 (例如 403 Forbidden 或 網路錯誤)
+                // 自動切換到第二順位：瀏覽器內建 TTS
+                console.warn("Google TTS 連線失敗，切換至內建語音引擎...", error);
+                speakNative(textToSpeak, lang, btn);
+            });
+        }
+    }
+
+    // 備援方案：瀏覽器內建 Web Speech API
+    function speakNative(text, lang, btn) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        
+        // 語言代碼對應
+        let langCode = 'en-US';
+        if (lang === 'ja') langCode = 'ja-JP';
+        if (lang === 'ko') langCode = 'ko-KR';
+        
+        utterance.lang = langCode;
+        utterance.rate = 0.9; // 稍微放慢語速
+        
+        utterance.onend = function() {
+            btn.classList.remove('playing');
+        };
+        
+        utterance.onerror = function() {
+            btn.classList.remove('playing');
+            alert("您的裝置不支援語音播放，請檢查音效設定。");
+        };
+
+        window.speechSynthesis.speak(utterance);
+    }
+
+    // ==========================================
+    // 📋 複製到 LINE
+    // ==========================================
     function copyForLine() {
         const words = vocabDatabase[currentDayIndex];
-        let text = `📅 Day ${currentDayIndex + 1} 單字表\n------------------\n`;
-        words.forEach((w, i) => { text += `🔹 ${w.en} ${w.ipa}\n   中: ${w.zh}\n   日: ${w.ja}\n   韓: ${w.ko}\n\n`; });
-        text += `💪 加油！`;
+        let text = `📅 職場英語 Day ${currentDayIndex + 1}\n------------------\n`;
+        
+        words.forEach((w, i) => {
+            text += `🔹 ${w.en} ${w.ipa}\n`;
+            text += `   中: ${w.zh}\n`;
+            text += `   日: ${w.ja}\n`;
+            text += `   韓: ${w.ko}\n\n`;
+        });
+
+        text += `💪 每天進步一點點！`;
+
         navigator.clipboard.writeText(text).then(() => {
-            const toast = document.getElementById("toast"); toast.className = "toast show";
+            const toast = document.getElementById("toast");
+            toast.className = "toast show";
             setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 3000);
+        }).catch(err => {
+            alert("複製失敗，請手動複製。");
         });
     }
 
     // ==========================================
-    // ⚔️ 測驗邏輯 (New Feature)
+    // ⚔️ 每日隨機測驗邏輯
     // ==========================================
     
-    // 洗牌演算法 (Fisher-Yates Shuffle)
+    // 洗牌演算法
     function shuffleArray(array) {
         for (let i = array.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -519,21 +602,21 @@
     }
 
     function startQuiz() {
-        // 1. 取得當天單字並複製一份來洗牌
+        // 1. 準備題目 (複製當天單字並洗牌)
         const todayWords = [...vocabDatabase[currentDayIndex]];
         quizData = shuffleArray(todayWords);
         
-        // 2. 初始化變數
+        // 2. 初始化
         quizCurrentIndex = 0;
         quizScore = 0;
         
-        // 3. UI 初始化
+        // 3. 顯示視窗
         document.getElementById('quizTitle').innerText = `Day ${currentDayIndex + 1} 隨機測驗`;
         document.getElementById('quizContent').style.display = 'block';
         document.getElementById('quizResult').style.display = 'none';
-        document.getElementById('quizModal').style.display = 'flex'; // 顯示模態框
+        document.getElementById('quizModal').style.display = 'flex';
         
-        // 4. 顯示第一題
+        // 4. 開始第一題
         showQuestion();
     }
 
@@ -550,25 +633,25 @@
         const currentWord = quizData[quizCurrentIndex];
         const todayWords = vocabDatabase[currentDayIndex];
 
-        // 更新進度
+        // 更新進度條
         document.getElementById('quizProgress').innerText = `Question ${quizCurrentIndex + 1} / ${quizData.length}`;
-        // 顯示英文題目
+        // 顯示英文單字
         document.getElementById('quizQuestion').innerText = currentWord.en;
 
-        // 產生選項 (1個正確 + 3個錯誤)
+        // 產生選項：1個正確 + 3個錯誤
         let options = [currentWord];
         
-        // 挑選錯誤選項 (從當天其他單字選)
+        // 挑選錯誤選項 (從當天其他單字中選)
         const wrongCandidates = todayWords.filter(w => w.en !== currentWord.en);
         const shuffledWrong = shuffleArray([...wrongCandidates]);
-        options.push(...shuffledWrong.slice(0, 3)); // 取前三個
+        options.push(...shuffledWrong.slice(0, 3)); 
         
         // 打亂選項順序
         options = shuffleArray(options);
 
         // 渲染按鈕
         const optionsContainer = document.getElementById('quizOptions');
-        optionsContainer.innerHTML = ''; // 清空
+        optionsContainer.innerHTML = ''; // 清空舊選項
 
         options.forEach(opt => {
             const btn = document.createElement('button');
@@ -580,7 +663,7 @@
     }
 
     function checkAnswer(btn, isCorrect) {
-        // 鎖定所有按鈕防止重複點擊
+        // 鎖定所有按鈕
         const allBtns = document.querySelectorAll('.quiz-option-btn');
         allBtns.forEach(b => b.disabled = true);
 
@@ -589,7 +672,7 @@
             quizScore += 10;
         } else {
             btn.classList.add('wrong-answer');
-            // 找出正確答案並標示
+            // 提示正確答案
             allBtns.forEach(b => {
                 if (b.innerText === quizData[quizCurrentIndex].zh) {
                     b.classList.add('correct-answer');
@@ -597,7 +680,7 @@
             });
         }
 
-        // 延遲 1 秒後進入下一題
+        // 延遲後進入下一題
         setTimeout(() => {
             quizCurrentIndex++;
             showQuestion();
@@ -607,10 +690,20 @@
     function showResult() {
         document.getElementById('quizContent').style.display = 'none';
         document.getElementById('quizResult').style.display = 'block';
-        document.getElementById('finalScore').innerText = quizScore;
+        
+        // 分數動畫效果
+        const scoreEl = document.getElementById('finalScore');
+        let current = 0;
+        const timer = setInterval(() => {
+            current += 1;
+            scoreEl.innerText = current;
+            if (current >= quizScore) clearInterval(timer);
+        }, 10);
+        
+        if (quizScore === 0) scoreEl.innerText = 0;
     }
 
-    // 初始化
+    // --- 程式進入點 ---
     initSelect();
     renderWords(0);
 
